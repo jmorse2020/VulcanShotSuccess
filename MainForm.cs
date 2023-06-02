@@ -996,23 +996,25 @@ namespace VulcanShotSuccess
             }
             var TempExcelFile = new ProgrammeLogic.ExcelFile(); // create a new ExcelFile
             TempExcelFile.file = openFileDialog1.FileName; // set file name
-            if (ListSheets(TempExcelFile.file).Count == 0)  // catch if listsheeets returns early indicating catch triggered
+            if (File.Exists(TempExcelFile.file)) 
             {
-                getFileButton.Invoke((MethodInvoker)delegate { getFileButton.Enabled = true; });
-                return;
-            }
-            TempExcelFile.worksheets = ListSheets(TempExcelFile.file); // set all sheets in file
-            user.files.Add(TempExcelFile); // Append to user.files list
-            if (InvokeRequired)
-            {
-                searchingFilesTextField.Invoke((MethodInvoker)delegate
+                if (ListSheets(TempExcelFile.file).Count == 0)  // catch if listsheeets returns early indicating catch triggered
                 {
-                    searchingFilesTextField.AppendText(openFileDialog1.FileName);
-                    searchingFilesTextField.AppendText(Environment.NewLine);                    
-                });
+                    getFileButton.Invoke((MethodInvoker)delegate { getFileButton.Enabled = true; });
+                    return;
+                }
+                TempExcelFile.worksheets = ListSheets(TempExcelFile.file); // set all sheets in file
+                user.files.Add(TempExcelFile); // Append to user.files list
+                if (InvokeRequired)
+                {
+                    searchingFilesTextField.Invoke((MethodInvoker)delegate
+                    {
+                        searchingFilesTextField.AppendText(openFileDialog1.FileName);
+                        searchingFilesTextField.AppendText(Environment.NewLine);
+                    });
+                } else { ConsoleMessage("The path selected does not lead to an existing file");  };
                 spinningWheel.Invoke((MethodInvoker)delegate { spinningWheel.Visible = false; });
                 getFileButton.Invoke((MethodInvoker)delegate { getFileButton.Enabled = true; });
-                
             }
         }
         private void getFileButton_Click(object sender, EventArgs e)
