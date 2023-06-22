@@ -90,7 +90,7 @@ namespace VulcanShotSuccess
             // Store the area in user.area
             user.area = areaDropDown.Text;
 
-            
+
             //RunButtonMethod();
             Thread t1 = new Thread(RunButtonMethod)
             {
@@ -217,7 +217,7 @@ namespace VulcanShotSuccess
                     else
                     {
                         ErrorMessage("No data could be located");
-                    }                    
+                    }
                 }
             }
             else
@@ -236,7 +236,7 @@ namespace VulcanShotSuccess
             {
                 runButton.Invoke((MethodInvoker)delegate
                 {
-                    runButton.Enabled = true;                    
+                    runButton.Enabled = true;
                 });
                 progressBar1.Invoke((MethodInvoker)delegate { progressBar1.Value = 0; });
             }
@@ -332,12 +332,12 @@ namespace VulcanShotSuccess
                 //ErrorMessage("Have got to line 252");
                 sw.WriteLine("\n\n* * * * * * * * * * * * * * * * * * *\n*   Information on Failed Shots     *\n* * * * * * * * * * * * * * * * * * *\n\n");
                 if (FailedShotArray.Count != 0)
-                {  
+                {
                     for (int b = 0; b < FailedShotArray.Count; b++)
                     {
-                        sw.WriteLine($"Failed shot {b+1}:\n\tDate:\t\t\t\t{FailedShotArray[b].date}\n\tShot Number / Type:\t{FailedShotArray[b].shotType}\n\tInner Osc:\t\t{FailedShotArray[b].innerOsc}\n\tOuter Osc:\t\t{FailedShotArray[b].outerOsc}\n\tWhere:\t\t\t{FailedShotArray[b].reason}\n\tComments:\t\t{FailedShotArray[b].comments}\n\n");
+                        sw.WriteLine($"Failed shot {b + 1}:\n\tDate:\t\t\t\t{FailedShotArray[b].date}\n\tShot Number / Type:\t{FailedShotArray[b].shotType}\n\tInner Osc:\t\t{FailedShotArray[b].innerOsc}\n\tOuter Osc:\t\t{FailedShotArray[b].outerOsc}\n\tWhere:\t\t\t{FailedShotArray[b].reason}\n\tComments:\t\t{FailedShotArray[b].comments}\n\n");
                     }
-                   
+
                 }
                 else
                 {
@@ -356,7 +356,7 @@ namespace VulcanShotSuccess
                         sw.WriteLine($"Inconclusive shot {b + 1}:\n\tDate:\t\t\t\t{InconclusiveShotArray[b].date}\n\tShot Number / Type:\t{InconclusiveShotArray[b].shotType}\n\tInner Osc:\t\t{InconclusiveShotArray[b].innerOsc}\n\tOuter Osc:\t\t{InconclusiveShotArray[b].outerOsc}\n\tWhere:\t\t\t{InconclusiveShotArray[b].reason}\n\tComments:\t\t{InconclusiveShotArray[b].comments}\n\n");
                     }
 
-                } 
+                }
                 else
                 {
                     sw.WriteLine("There were no Inconclusive shots found");
@@ -365,7 +365,7 @@ namespace VulcanShotSuccess
             } // Use this piece of code to write to a file..
 
         }
-        
+
         public string FailedShotReason(DataRow row, DataTable table)
         {
             string Arr = String.Empty;
@@ -435,7 +435,7 @@ namespace VulcanShotSuccess
                     resultsTextField.AppendText($"\n\t\t{user.files[i].file}");
                 }
             }
-            
+
         }
 
         public void ErrorMessage(string error)
@@ -467,7 +467,11 @@ namespace VulcanShotSuccess
             try
             {
                 var sheetNames = new List<string>();
-                WorkBook workbook = WorkBook.Load(filename);
+                WorkBook workbook;
+                try
+                {
+                    workbook = WorkBook.Load(filename);
+                } catch { workbook = WorkBook.LoadExcel(filename); }
                 if (workbook != null)
                 {
                     var sheets = workbook.WorkSheets;
@@ -496,7 +500,7 @@ namespace VulcanShotSuccess
             }
             catch (Exception ex)
             {
-                ErrorMessage("Cannot open file(s), exception: " + ex);
+                ErrorMessage("Cannot open file(s), exception: " + ex.Message);
                 spinningWheel.Invoke((MethodInvoker)delegate { spinningWheel.Visible = false; });
                 return new List<string>();
             }
@@ -586,7 +590,7 @@ namespace VulcanShotSuccess
             {
                 try
                 {
-                   if ((data.Rows[ReqRow].Field<double>(Col) - 5 < data.Rows[DelRow].Field<double>(Col)) && (data.Rows[DelRow].Field<double>(Col) < data.Rows[ReqRow].Field<double>(Col) + 5)) // (data.Rows[DelRow].Field<double>(Col) + 5.0 >= data.Rows[ReqRow].Field<double>(Col)) || (data.Rows[DelRow].Field<double>(Col) - 5.0 <= data.Rows[ReqRow].Field<double>(Col))
+                    if ((data.Rows[ReqRow].Field<double>(Col) - 5 < data.Rows[DelRow].Field<double>(Col)) && (data.Rows[DelRow].Field<double>(Col) < data.Rows[ReqRow].Field<double>(Col) + 5)) // (data.Rows[DelRow].Field<double>(Col) + 5.0 >= data.Rows[ReqRow].Field<double>(Col)) || (data.Rows[DelRow].Field<double>(Col) - 5.0 <= data.Rows[ReqRow].Field<double>(Col))
                     {
                         return "1";
                     }
@@ -652,7 +656,7 @@ namespace VulcanShotSuccess
             }
             catch (System.NullReferenceException)
             {
-                 isShotNo = "";
+                isShotNo = "";
             }
             catch (System.IndexOutOfRangeException)
             {
@@ -660,179 +664,196 @@ namespace VulcanShotSuccess
             }
             while ((proceedCondition < data.Rows.Count) && (isShotNo.Equals("Shot no.")))
             {
-                // ConsoleMessage($"Entered 369, {user.area}, {acceptedShotType(data, proceedCondition)}");
-                //dataGridView1.Invoke((MethodInvoker)delegate { dataGridView1.DataSource = data; });
-                string OuterSuccess;
-                string InnerSuccess;
-                if (user.area.Equals("TAP") && (acceptedShotType(data, proceedCondition)))
+                try
                 {
-                    if (data.Rows[AreaRow].Field<string>(1).Equals("TAP"))
+                    // ConsoleMessage($"Entered 369, {user.area}, {acceptedShotType(data, proceedCondition)}");
+                    //dataGridView1.Invoke((MethodInvoker)delegate { dataGridView1.DataSource = data; });
+                    string OuterSuccess;
+                    string InnerSuccess;
+                    if (user.area.Equals("TAP") && (acceptedShotType(data, proceedCondition)))
                     {
-                        InnerSuccess = "N/A";
-                        string ABC208Success = isSuccessful(shotRatio(ReqRow, DelRow, data, 31));
-                        string ABC208Req = DoubleCellValue(data, ReqRow, 31);
-                        string ABC208Del = DoubleCellValue(data, DelRow, 31);
-                        string U150Success = isSuccessful(shotRatio(ReqRow, DelRow, data, 28));
-                        string U150Req = DoubleCellValue(data, ReqRow, 28);
-                        string U150Del = DoubleCellValue(data, DelRow, 28);
-                        string L150Success = isSuccessful(shotRatio(ReqRow, DelRow, data, 30));
-                        string L150Req = DoubleCellValue(data, ReqRow, 30);
-                        string L150Del = DoubleCellValue(data, DelRow, 30);
-                        if (checkSuccess(ABC208Success) && checkSuccess(U150Success) && checkSuccess(L150Success))
+                        if (data.Rows[AreaRow].Field<string>(1).Equals("TAP"))
                         {
-                            if (double.IsNaN(Convert.ToDouble(ABC208Success)) && double.IsNaN(Convert.ToDouble(U150Success)) && double.IsNaN(Convert.ToDouble(L150Success)))
+                            InnerSuccess = "N/A";
+                            string ABC208Success = isSuccessful(shotRatio(ReqRow, DelRow, data, 31));
+                            string ABC208Req = DoubleCellValue(data, ReqRow, 31);
+                            string ABC208Del = DoubleCellValue(data, DelRow, 31);
+                            string U150Success = isSuccessful(shotRatio(ReqRow, DelRow, data, 28));
+                            string U150Req = DoubleCellValue(data, ReqRow, 28);
+                            string U150Del = DoubleCellValue(data, DelRow, 28);
+                            string L150Success = isSuccessful(shotRatio(ReqRow, DelRow, data, 30));
+                            string L150Req = DoubleCellValue(data, ReqRow, 30);
+                            string L150Del = DoubleCellValue(data, DelRow, 30);
+                            if (checkSuccess(ABC208Success) && checkSuccess(U150Success) && checkSuccess(L150Success))
                             {
-                                OuterSuccess = "NaN";
+                                if (double.IsNaN(Convert.ToDouble(ABC208Success)) && double.IsNaN(Convert.ToDouble(U150Success)) && double.IsNaN(Convert.ToDouble(L150Success)))
+                                {
+                                    OuterSuccess = "NaN";
+                                }
+                                else
+                                {
+                                    OuterSuccess = "1";
+                                }
                             }
                             else
                             {
-                                OuterSuccess = "1";
+                                OuterSuccess = "0";
                             }
-                        }
-                        else
-                        {
-                            OuterSuccess = "0";
-                        }                      
-                        string Success = OverallSuccess("NaN", OuterSuccess);
-                        string CommentCellValue = data.Rows[CommentsRow].Field<string>(3);
-                        string Comment;
-                        if (CommentCellValue.Equals(""))
-                        {
-                            double requestedEntry = data.Rows[ReqRow].Field<double>(31);
-                            double deliveredEntry = data.Rows[DelRow].Field<double>(31);
-                            Comment = "No Comment" + $". Additional Information: The energy was {String.Format("{0:0.00}", (Math.Abs(requestedEntry - deliveredEntry) / requestedEntry) * 100)}% from the requested energy of {requestedEntry}J";
-                        }
-                        else
-                        {
-                            double requestedEntry = data.Rows[ReqRow].Field<double>(31);
-                            double deliveredEntry = data.Rows[DelRow].Field<double>(31);
-                            Comment = CommentCellValue + $". Additional Information: The energy was {String.Format("{0:0.00}", (Math.Abs(requestedEntry - deliveredEntry) / requestedEntry) * 100)}% from the requested energy of {requestedEntry}J";
-                        }
-                        string InnerOscillator = data.Rows[OscillatorRow].Field<string>(4);
-                        string OuterOscillator = data.Rows[OscillatorRow].Field<string>(20);
-                        if (InnerOscillator.Equals(""))
-                        {
-                            InnerOscillator = "Unknown";
-                        }
-                        if (OuterOscillator.Equals(""))
-                        {
-                            OuterOscillator = "Unknown";
-                        }
-                        string ShotTypeString = GetShotTypeString(data, proceedCondition);
+                            string Success = OverallSuccess("NaN", OuterSuccess);
+                            string CommentCellValue = data.Rows[CommentsRow].Field<string>(3);
+                            string Comment;
+                            if (CommentCellValue.Equals(""))
+                            {
+                                double requestedEntry = double.NaN;
+                                double deliveredEntry = double.NaN;
+                                try
+                                {
+                                    requestedEntry = data.Rows[ReqRow].Field<double>(31);
+                                    deliveredEntry = data.Rows[DelRow].Field<double>(31);
+                                } catch (InvalidCastException ex)
+                                {
+                                    ConsoleMessage("Invalid cast exception in " + sheetname + " Shot " + GetShotTypeString(data, proceedCondition) + ": " + ex.Message);
+                                } catch (Exception e)
+                                {
+                                    ErrorMessage("Unknown exception in " + sheetname + " Shot " + GetShotTypeString(data, proceedCondition) + ": " + e.Message);
+                                }
+                                Comment = "No Comment" + $". Additional Information: The energy was {String.Format("{0:0.00}", (Math.Abs(requestedEntry - deliveredEntry) / requestedEntry) * 100)}% from the requested energy of {requestedEntry}J";
+                            }
+                            else
+                            {
+                                double requestedEntry = data.Rows[ReqRow].Field<double>(31);
+                                double deliveredEntry = data.Rows[DelRow].Field<double>(31);
+                                Comment = CommentCellValue + $". Additional Information: The energy was {String.Format("{0:0.00}", (Math.Abs(requestedEntry - deliveredEntry) / requestedEntry) * 100)}% from the requested energy of {requestedEntry}J";
+                            }
+                            string InnerOscillator = data.Rows[OscillatorRow].Field<string>(4);
+                            string OuterOscillator = data.Rows[OscillatorRow].Field<string>(20);
+                            if (InnerOscillator.Equals(""))
+                            {
+                                InnerOscillator = "Unknown";
+                            }
+                            if (OuterOscillator.Equals(""))
+                            {
+                                OuterOscillator = "Unknown";
+                            }
+                            string ShotTypeString = GetShotTypeString(data, proceedCondition);
 
-                        // ConsoleMessage(sheetname + ", \t" + ShotType + ", \t" + "TAP" + ", \t" + InnerOscillator + ", \t" + OuterOscillator + ", \t" + InnerSuccess + ", \t" + OuterSuccess + ", \t" + Success + ", \t" + "N / A" + ", \t" + "N / A" + ", \t" + "N / A" + ", \t" + "N / A" + ", \t" + "N / A" + ", \t" + "N / A" + ", \t" + L150Success + ", \t" + U150Success + ", \t" + ABC208Success + ", \t" + filename + ", \t" + Comment);
-                        //DataString.Add(sheetname + ", \t" + ShotTypeString + ", \t" + "TAP" + ", \t" + InnerOscillator + ", \t" + OuterOscillator + ", \t" + InnerSuccess + ", \t" + OuterSuccess + ", \t" + Success + ", \t" + "N/A" + ", \t" + "N/A" + ", \t" + "N/A" + ", \t" + "N/A" + ", \t" + "N/A" + ", \t" + "N/A" + ", \t" + L150Success + ", \t" + U150Success + ", \t" + ABC208Success + ", \t" + filename + ", \t" + Comment);
-                        DataString.Add(sheetname + ", \t" + ShotTypeString + ", \t" + "TAP" + ", \t" + InnerOscillator + ", \t" + OuterOscillator + ", \t" + InnerSuccess + ", \t" + OuterSuccess + ", \t" + Success + ", \t" + "N/A" + ", \t" + "NaN" + ", \t" + "NaN" + ", \t" + "N/A" + ", \t" + "NaN" + ", \t" + "NaN" + ", \t" + "N/A" + ", \t" + "NaN" + ", \t" + "NaN" + ", \t" + "N/A" + ", \t" + "NaN" + ", \t" + "NaN" + ", \t" + "N/A" + ", \t" + "NaN" + ", \t" + "NaN" + ", \t" + "N/A" + ", \t" + "NaN" + ", \t" + "NaN" + ", \t" + L150Success + ", \t" + L150Req + ", \t" + L150Del + ", \t" + U150Success + ", \t" + U150Req + ", \t" + U150Del + ", \t" + ABC208Success + ", \t" + ABC208Req + ", \t" + ABC208Del + ", \t" + filename + ", \t" + Comment);
+                            // ConsoleMessage(sheetname + ", \t" + ShotType + ", \t" + "TAP" + ", \t" + InnerOscillator + ", \t" + OuterOscillator + ", \t" + InnerSuccess + ", \t" + OuterSuccess + ", \t" + Success + ", \t" + "N / A" + ", \t" + "N / A" + ", \t" + "N / A" + ", \t" + "N / A" + ", \t" + "N / A" + ", \t" + "N / A" + ", \t" + L150Success + ", \t" + U150Success + ", \t" + ABC208Success + ", \t" + filename + ", \t" + Comment);
+                            //DataString.Add(sheetname + ", \t" + ShotTypeString + ", \t" + "TAP" + ", \t" + InnerOscillator + ", \t" + OuterOscillator + ", \t" + InnerSuccess + ", \t" + OuterSuccess + ", \t" + Success + ", \t" + "N/A" + ", \t" + "N/A" + ", \t" + "N/A" + ", \t" + "N/A" + ", \t" + "N/A" + ", \t" + "N/A" + ", \t" + L150Success + ", \t" + U150Success + ", \t" + ABC208Success + ", \t" + filename + ", \t" + Comment);
+                            DataString.Add(sheetname + ", \t" + ShotTypeString + ", \t" + "TAP" + ", \t" + InnerOscillator + ", \t" + OuterOscillator + ", \t" + InnerSuccess + ", \t" + OuterSuccess + ", \t" + Success + ", \t" + "N/A" + ", \t" + "NaN" + ", \t" + "NaN" + ", \t" + "N/A" + ", \t" + "NaN" + ", \t" + "NaN" + ", \t" + "N/A" + ", \t" + "NaN" + ", \t" + "NaN" + ", \t" + "N/A" + ", \t" + "NaN" + ", \t" + "NaN" + ", \t" + "N/A" + ", \t" + "NaN" + ", \t" + "NaN" + ", \t" + "N/A" + ", \t" + "NaN" + ", \t" + "NaN" + ", \t" + L150Success + ", \t" + L150Req + ", \t" + L150Del + ", \t" + U150Success + ", \t" + U150Req + ", \t" + U150Del + ", \t" + ABC208Success + ", \t" + ABC208Req + ", \t" + ABC208Del + ", \t" + filename + ", \t" + Comment);
+                        }
+                        else
+                        {
+                            DataString.Add("");
+                        }
+                    }
+                    else if (user.area.Equals("TAW") && (acceptedShotType(data, proceedCondition)))
+                    {
+                        // ConsoleMessage("Entered 426");
+                        // ConsoleMessage($"{data.Rows[AreaRow].Field<string>(1)},  {AreaRow}");
+                        if (data.Rows[AreaRow].Field<string>(1).Equals("TAW"))
+                        {
+                            // Inner Track
+                            //string UESuccess = isSuccessful(shotRatio(ReqRow, DelRow, data, 11));
+                            string UESuccess = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 11)), ReqRow, DelRow, data, 11);
+                            string UEReq = DoubleCellValue(data, ReqRow, 11);
+                            string UEDel = DoubleCellValue(data, DelRow, 11);
+                            //string LESuccess = isSuccessful(shotRatio(ReqRow, DelRow, data, 12)); 
+                            string LESuccess = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 12)), ReqRow, DelRow, data, 12);
+                            string LEReq = DoubleCellValue(data, ReqRow, 12);
+                            string LEDel = DoubleCellValue(data, DelRow, 12);
+                            //string LWSuccess = isSuccessful(shotRatio(ReqRow, DelRow, data, 13));
+                            string LWSuccess = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 13)), ReqRow, DelRow, data, 13);
+                            string LWReq = DoubleCellValue(data, ReqRow, 13);
+                            string LWDel = DoubleCellValue(data, DelRow, 13);
+                            //string UWSuccess = isSuccessful(shotRatio(ReqRow, DelRow, data, 15));
+                            string UWSuccess = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 15)), ReqRow, DelRow, data, 15);
+                            string UWReq = DoubleCellValue(data, ReqRow, 15);
+                            string UWDel = DoubleCellValue(data, DelRow, 15);
+                            //string MESuccess = isSuccessful(shotRatio(ReqRow, DelRow, data, 16));
+                            string MESuccess = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 16)), ReqRow, DelRow, data, 16);
+                            string MEReq = DoubleCellValue(data, ReqRow, 16);
+                            string MEDel = DoubleCellValue(data, DelRow, 16);
+                            //string MWSuccess = isSuccessful(shotRatio(ReqRow, DelRow, data, 17));
+                            string MWSuccess = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 17)), ReqRow, DelRow, data, 17);
+                            string MWReq = DoubleCellValue(data, ReqRow, 17);
+                            string MWDel = DoubleCellValue(data, DelRow, 17);
+                            if (checkSuccess(UESuccess) && checkSuccess(LESuccess) && checkSuccess(LWSuccess) && checkSuccess(UWSuccess) && checkSuccess(MESuccess) && checkSuccess(MWSuccess))
+                            {
+                                if (double.IsNaN(Convert.ToDouble(UESuccess)) && double.IsNaN(Convert.ToDouble(LESuccess)) && double.IsNaN(Convert.ToDouble(LWSuccess)) && double.IsNaN(Convert.ToDouble(UWSuccess)) && double.IsNaN(Convert.ToDouble(MESuccess)) && double.IsNaN(Convert.ToDouble(MWSuccess)))
+                                {
+                                    InnerSuccess = "NaN";
+                                }
+                                else
+                                {
+                                    InnerSuccess = "1";
+                                }
+                            }
+                            else
+                            {
+                                InnerSuccess = "0";
+                            }
+
+                            // Outer Track
+                            //string U150Success = isSuccessful(shotRatio(ReqRow, DelRow, data, 28));
+                            string U150Success = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 28)), ReqRow, DelRow, data, 28);
+                            string U150Req = DoubleCellValue(data, ReqRow, 28);
+                            string U150Del = DoubleCellValue(data, DelRow, 28);
+                            //string L150Success = isSuccessful(shotRatio(ReqRow, DelRow, data, 30));
+                            string L150Success = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 30)), ReqRow, DelRow, data, 28);
+                            string L150Req = DoubleCellValue(data, ReqRow, 30);
+                            string L150Del = DoubleCellValue(data, DelRow, 30);
+                            if (checkSuccess(U150Success) && checkSuccess(L150Success))
+                            {
+                                if (double.IsNaN(Convert.ToDouble(U150Success)) && double.IsNaN(Convert.ToDouble(L150Success)))
+                                {
+                                    OuterSuccess = "NaN";
+                                }
+                                else
+                                {
+                                    OuterSuccess = "1";
+                                }
+                            }
+                            else
+                            {
+                                OuterSuccess = "0";
+                            }
+                            string Success = OverallSuccess(InnerSuccess, OuterSuccess);
+                            string CommentCellValue = data.Rows[CommentsRow].Field<string>(3);
+                            string Comment;
+                            if (CommentCellValue.Equals(""))
+                            {
+                                Comment = "No Comment";
+                            }
+                            else
+                            {
+                                Comment = CommentCellValue;
+                            }
+                            string InnerOscillator = data.Rows[OscillatorRow].Field<string>(4);
+                            string OuterOscillator = data.Rows[OscillatorRow].Field<string>(20);
+                            if (InnerOscillator.Equals(""))
+                            {
+                                InnerOscillator = "Unknown";
+                            }
+                            if (OuterOscillator.Equals(""))
+                            {
+                                OuterOscillator = "Unknown";
+                            }
+                            string ShotTypeString = GetShotTypeString(data, proceedCondition);
+                            // ConsoleMessage(sheetname + ", \t" + ShotType + ", \t" + "TAW" + ", \t" + InnerOscillator + ", \t" + OuterOscillator + ", \t" + InnerSuccess + ", \t" + OuterSuccess + ", \t" + Success + ", \t" + UESuccess + ", \t" + LESuccess + ", \t" + LWSuccess + ", \t" + UWSuccess + ", \t" + MESuccess + ", \t" + MWSuccess + ", \t" + L150Success + ", \t" + U150Success + ", \t" + "N/A" + ", \t" + filename + ", \t" + Comment);
+                            DataString.Add(sheetname + ", \t" + ShotTypeString + ", \t" + "TAW" + ", \t" + InnerOscillator + ", \t" + OuterOscillator + ", \t" + InnerSuccess + ", \t" + OuterSuccess + ", \t" + Success + ", \t" + UESuccess + ", \t" + UEReq + ", \t" + UEDel + ", \t" + LESuccess + ", \t" + LEReq + ", \t" + LEDel + ", \t" + LWSuccess + ", \t" + LWReq + ", \t" + LWDel + ", \t" + UWSuccess + ", \t" + UWReq + ", \t" + UWDel + ", \t" + MESuccess + ", \t" + MEReq + ", \t" + MEDel + ", \t" + MWSuccess + ", \t" + MWReq + ", \t" + MWDel + ", \t" + L150Success + ", \t" + L150Req + ", \t" + L150Del + ", \t" + U150Success + ", \t" + U150Req + ", \t" + U150Del + ", \t" + "N/A" + ", \t" + "NaN" + ", \t" + "NaN" + ", \t" + filename + ", \t" + Comment);
+                        }
+                        else
+                        {
+                            DataString.Add("");
+                        }
                     }
                     else
                     {
                         DataString.Add("");
                     }
-                }
-                else if (user.area.Equals("TAW") && (acceptedShotType(data, proceedCondition)))
+                } catch (Exception e)
                 {
-                    // ConsoleMessage("Entered 426");
-                    // ConsoleMessage($"{data.Rows[AreaRow].Field<string>(1)},  {AreaRow}");
-                    if (data.Rows[AreaRow].Field<string>(1).Equals("TAW"))
-                    {
-                        // Inner Track
-                        //string UESuccess = isSuccessful(shotRatio(ReqRow, DelRow, data, 11));
-                        string UESuccess = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 11)), ReqRow, DelRow, data, 11);
-                        string UEReq = DoubleCellValue(data, ReqRow, 11);
-                        string UEDel = DoubleCellValue(data, DelRow, 11);
-                        //string LESuccess = isSuccessful(shotRatio(ReqRow, DelRow, data, 12)); 
-                        string LESuccess = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 12)), ReqRow, DelRow, data, 12);
-                        string LEReq = DoubleCellValue(data, ReqRow, 12);
-                        string LEDel = DoubleCellValue(data, DelRow, 12);
-                        //string LWSuccess = isSuccessful(shotRatio(ReqRow, DelRow, data, 13));
-                        string LWSuccess = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 13)), ReqRow, DelRow, data, 13);
-                        string LWReq = DoubleCellValue(data, ReqRow, 13);
-                        string LWDel = DoubleCellValue(data, DelRow, 13);
-                        //string UWSuccess = isSuccessful(shotRatio(ReqRow, DelRow, data, 15));
-                        string UWSuccess = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 15)), ReqRow, DelRow, data, 15);
-                        string UWReq = DoubleCellValue(data, ReqRow, 15);
-                        string UWDel = DoubleCellValue(data, DelRow, 15);
-                        //string MESuccess = isSuccessful(shotRatio(ReqRow, DelRow, data, 16));
-                        string MESuccess = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 16)), ReqRow, DelRow, data, 16);
-                        string MEReq = DoubleCellValue(data, ReqRow, 16);
-                        string MEDel = DoubleCellValue(data, DelRow, 16);
-                        //string MWSuccess = isSuccessful(shotRatio(ReqRow, DelRow, data, 17));
-                        string MWSuccess = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 17)), ReqRow, DelRow, data, 17);
-                        string MWReq = DoubleCellValue(data, ReqRow, 17);
-                        string MWDel = DoubleCellValue(data, DelRow, 17);
-                        if (checkSuccess(UESuccess) && checkSuccess(LESuccess) && checkSuccess(LWSuccess) && checkSuccess(UWSuccess) && checkSuccess(MESuccess) && checkSuccess(MWSuccess))
-                        {
-                            if (double.IsNaN(Convert.ToDouble(UESuccess)) && double.IsNaN(Convert.ToDouble(LESuccess)) && double.IsNaN(Convert.ToDouble(LWSuccess)) && double.IsNaN(Convert.ToDouble(UWSuccess)) && double.IsNaN(Convert.ToDouble(MESuccess)) && double.IsNaN(Convert.ToDouble(MWSuccess)))
-                            {
-                                InnerSuccess = "NaN";
-                            }
-                            else
-                            {
-                                InnerSuccess = "1";
-                            }
-                        }
-                        else
-                        {
-                            InnerSuccess = "0";
-                        }
-
-                        // Outer Track
-                        //string U150Success = isSuccessful(shotRatio(ReqRow, DelRow, data, 28));
-                        string U150Success = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 28)), ReqRow, DelRow, data, 28);
-                        string U150Req = DoubleCellValue(data, ReqRow, 28);
-                        string U150Del = DoubleCellValue(data, DelRow, 28);
-                        //string L150Success = isSuccessful(shotRatio(ReqRow, DelRow, data, 30));
-                        string L150Success = orPlusMinus5Joule(isSuccessful(shotRatio(ReqRow, DelRow, data, 30)), ReqRow, DelRow, data, 28);
-                        string L150Req = DoubleCellValue(data, ReqRow, 30);
-                        string L150Del = DoubleCellValue(data, DelRow, 30);
-                        if (checkSuccess(U150Success) && checkSuccess(L150Success))
-                        {
-                            if (double.IsNaN(Convert.ToDouble(U150Success)) && double.IsNaN(Convert.ToDouble(L150Success)))
-                            {
-                                OuterSuccess = "NaN";
-                            }
-                            else
-                            {
-                                OuterSuccess = "1";
-                            }
-                        }
-                        else
-                        {
-                            OuterSuccess = "0";
-                        }
-                        string Success = OverallSuccess(InnerSuccess, OuterSuccess);
-                        string CommentCellValue = data.Rows[CommentsRow].Field<string>(3);
-                        string Comment;
-                        if (CommentCellValue.Equals(""))
-                        {
-                            Comment = "No Comment";
-                        }
-                        else
-                        {
-                            Comment = CommentCellValue;
-                        }
-                        string InnerOscillator = data.Rows[OscillatorRow].Field<string>(4);
-                        string OuterOscillator = data.Rows[OscillatorRow].Field<string>(20);
-                        if (InnerOscillator.Equals(""))
-                        {
-                            InnerOscillator = "Unknown";
-                        }
-                        if (OuterOscillator.Equals(""))
-                        {
-                            OuterOscillator = "Unknown";
-                        }
-                        string ShotTypeString = GetShotTypeString(data, proceedCondition);
-                        // ConsoleMessage(sheetname + ", \t" + ShotType + ", \t" + "TAW" + ", \t" + InnerOscillator + ", \t" + OuterOscillator + ", \t" + InnerSuccess + ", \t" + OuterSuccess + ", \t" + Success + ", \t" + UESuccess + ", \t" + LESuccess + ", \t" + LWSuccess + ", \t" + UWSuccess + ", \t" + MESuccess + ", \t" + MWSuccess + ", \t" + L150Success + ", \t" + U150Success + ", \t" + "N/A" + ", \t" + filename + ", \t" + Comment);
-                        DataString.Add(sheetname + ", \t" + ShotTypeString + ", \t" + "TAW" + ", \t" + InnerOscillator + ", \t" + OuterOscillator + ", \t" + InnerSuccess + ", \t" + OuterSuccess + ", \t" + Success + ", \t" + UESuccess + ", \t" + UEReq + ", \t" + UEDel + ", \t" + LESuccess + ", \t" + LEReq + ", \t" + LEDel + ", \t" + LWSuccess + ", \t" + LWReq + ", \t" + LWDel + ", \t" + UWSuccess + ", \t" + UWReq + ", \t" + UWDel + ", \t" + MESuccess + ", \t" + MEReq + ", \t" + MEDel + ", \t" + MWSuccess + ", \t" + MWReq + ", \t" + MWDel + ", \t" + L150Success + ", \t" + L150Req + ", \t" + L150Del + ", \t" + U150Success + ", \t" + U150Req + ", \t" + U150Del + ", \t" + "N/A" + ", \t" + "NaN" + ", \t" + "NaN" + ", \t" + filename + ", \t" + Comment);
-                    }
-                    else
-                    {
-                        DataString.Add("");
-                    }
-                }
-                else
-                {
-                    DataString.Add("");
+                    ErrorMessage("Unknown exception in " + sheetname + ": " + e.Message);
                 }
                 // Iterations
                 ReqRow += 8;
@@ -984,9 +1005,10 @@ namespace VulcanShotSuccess
         {
             if (InvokeRequired)
             {
-                spinningWheel.Invoke((MethodInvoker)delegate {
+                spinningWheel.Invoke((MethodInvoker)delegate
+                {
                     spinningWheel.Visible = true;
-                    spinningWheel.Refresh();                    
+                    spinningWheel.Refresh();
                 });
                 getFileButton.Invoke((MethodInvoker)delegate { getFileButton.Enabled = false; });
             }
@@ -996,7 +1018,7 @@ namespace VulcanShotSuccess
             }
             var TempExcelFile = new ProgrammeLogic.ExcelFile(); // create a new ExcelFile
             TempExcelFile.file = openFileDialog1.FileName; // set file name
-            if (File.Exists(TempExcelFile.file)) 
+            if (File.Exists(TempExcelFile.file))
             {
                 if (ListSheets(TempExcelFile.file).Count == 0)  // catch if listsheeets returns early indicating catch triggered
                 {
@@ -1012,7 +1034,8 @@ namespace VulcanShotSuccess
                         searchingFilesTextField.AppendText(openFileDialog1.FileName);
                         searchingFilesTextField.AppendText(Environment.NewLine);
                     });
-                } else { ConsoleMessage("The path selected does not lead to an existing file");  };
+                }
+                else { ConsoleMessage("The path selected does not lead to an existing file"); };
                 spinningWheel.Invoke((MethodInvoker)delegate { spinningWheel.Visible = false; });
                 getFileButton.Invoke((MethodInvoker)delegate { getFileButton.Enabled = true; });
             }
@@ -1028,15 +1051,15 @@ namespace VulcanShotSuccess
                 };
                 t2.Start();
             }
-            
-            
+
+
         }
         public static DataTable ConvertCSVtoDataTable(string sCsvFilePath)
         {
             DataTable dtTable = new DataTable();
             Regex CSVParser = new Regex(",(?=(?:[^\"]*\"[^\"]*\")*(?![^\"]*\"))");
 
-            
+
 
             using (StreamReader sr = new StreamReader(sCsvFilePath))
             {
@@ -1117,7 +1140,7 @@ namespace VulcanShotSuccess
         }
 
         private void removeFile_Click(object sender, EventArgs e)
-        {            
+        {
             if (user.files == null) // If files not initiated, do now
             {
                 ErrorMessage("There are no files to remove");
@@ -1132,7 +1155,7 @@ namespace VulcanShotSuccess
                     user.files.RemoveAt(user.files.Count - 1);
                     searchingFilesTextField.Text = "";
                     for (int i = 0; i < user.files.Count; i++)
-                    {                        
+                    {
                         searchingFilesTextField.AppendText(user.files[i].file);
                     }
                 }
@@ -1141,7 +1164,31 @@ namespace VulcanShotSuccess
                     // If 'No', do something here.
                 }
             }
-            
+
+        }
+
+        private void button1_Click_2(object sender, EventArgs e)
+        {
+            WorkBook workbook;
+            string filename = "C:\\Users\\uxy33753\\Documents\\Oliver_TAW_&_McKenna_TAP_May_2023.xlsm";
+            var sheetNames = new List<string>();
+            try
+            {
+                workbook = WorkBook.Load(filename);
+            }
+            catch { workbook = WorkBook.LoadExcel(filename); }
+            if (workbook != null)
+            {
+                var sheets = workbook.WorkSheets;
+                foreach (WorkSheet sheet in sheets)
+                {
+                    sheetNames.Add(sheet.Name);
+                }
+            }
+            else
+            {
+                ErrorMessage("No sheets could be found in the file");
+            }
         }
     }
 }
